@@ -1,1 +1,42 @@
-/target
+# === Cargo / Rust ===
+# Fichiers de build et dossiers cibles
+/target/
+**/target/
+
+# Lockfile généré automatiquement
+Cargo.lock
+
+# Fichiers compilés ou temporaires
+*.rs.bk
+*.rmeta
+*.d
+*.rlib
+*.so
+*.dll
+*.dylib
+*.exe
+
+# === IDEs / Editors ===
+# Visual Studio Code
+.vscode/
+.history/
+*.code-workspace
+
+# IntelliJ / CLion / Rust plugin
+.idea/
+*.iml
+
+# Sublime Text
+*.sublime-workspace
+*.sublime-project
+
+# === Autres fichiers temporaires ===
+*.swp
+*.swo
+*.tmp
+*.log
+*.bak
+
+# === macOS / Linux / Windows spécifiques ===
+.DS_Store
+Thumbs.db
