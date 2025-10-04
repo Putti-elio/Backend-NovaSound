@@ -2,24 +2,10 @@ ARG RUST_VERSION=1.90-slim
 
 FROM rust:${RUST_VERSION} AS dev
 
-ENV RUST_ENV=development
-
 WORKDIR /app
 
-COPY Cargo.toml .
+COPY rust/Cargo.toml . 
 
-COPY src/ .
+COPY rust/src/ ./src
 
-RUN cargo build
-
-# Change ownership of the application directory to the node user
-RUN chown -R rust:rust /app
-
-# Switch to the node user
-USER rust
-
-# Expose the port used by the Vite development server
 EXPOSE 3000
-
-# Use a default command, can be overridden in Docker compose.yml file
-CMD ["cargo", "run"], 
