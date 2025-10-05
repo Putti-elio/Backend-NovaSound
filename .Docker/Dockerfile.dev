@@ -4,8 +4,8 @@ FROM rust:${RUST_VERSION} AS dev
 
 WORKDIR /app
 
-COPY rust/Cargo.toml . 
+COPY Cargo.toml . 
 
-COPY rust/src/ ./src
+COPY src/ ./src
 
 EXPOSE 3000
