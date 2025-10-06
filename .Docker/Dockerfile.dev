@@ -8,4 +8,7 @@ COPY Cargo.toml .
 
 COPY src/ ./src
 
-EXPOSE 3000
+RUN apt-get update -y && apt-get install -y libsqlite3-dev && rm -rf /var/lib/apt/lists/*
+
+
+EXPOSE 4000
