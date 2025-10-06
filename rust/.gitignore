@@ -40,3 +40,6 @@ Cargo.lock
 # === macOS / Linux / Windows spécifiques ===
 .DS_Store
 Thumbs.db
+
+# === db ===
+.sqlite
