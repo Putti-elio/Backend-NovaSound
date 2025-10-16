@@ -1,26 +1,35 @@
-use rusqlite::{Connection, Result};
+use rusqlite::{Connection, Result, Error};
+use log::{info, error};
+use function_name::named;
 
-pub fn init_db() -> Result<Connection> {
-    let db = Connection::open("app.db")?;
-    println!("✅ Connected to SQLite database.");
-    
+
+#[named]
+pub fn init_database() -> Result<Connection, Error> {
+    let database = Connection::open("../data/database.db")
+        .map_err(|e| {
+            error!("Database couldn't be initialized: {}. At {}::{}", e, file!(), function_name!());
+            e
+        })?;
+
     let query = "
         CREATE TABLE IF NOT EXISTS artists (
-            name TEXT, 
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            name TEXT NOT NULL UNIQUE,
+            image_path TEXT
         );
 
         CREATE TABLE IF NOT EXISTS songs (
-            name TEXT,
-            duration TIME
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            name TEXT NOT NULL,
+            duration INTEGER
         );
     ";  
 
-    db.execute_batch(query){
-        Ok(db) =>{
-            println!("Connected to SQLite database and tables create.");
-        }
-        Err(e) =>{
-            println!("Not connected to SQLite database.");
-        }
-    };
+    database.execute_batch(query).map_err(|err| {
+        error!("Failed to initialise the database and to create tables: {}. At {}::{}", err, file!(), function_name!());
+        err
+    })?;
+
+    info!("Tables created successfully!");
+    Ok(database)
 }
