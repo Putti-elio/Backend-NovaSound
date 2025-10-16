@@ -42,4 +42,4 @@ Cargo.lock
 Thumbs.db
 
 # === db ===
-.sqlite
+*.sqlite
