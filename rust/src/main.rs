@@ -1,29 +1,27 @@
-use axum::{
-    routing::get,
-    Router,
-};
-use std::net::{IpAddr, Ipv4Addr, SocketAddr};
+use std::sync::{Arc, Mutex};
+use std::net::SocketAddr;
+use log::info;
+use env_logger;
+
+use rust::database::init_database;
+use rust::routes::create_router;
 
 #[tokio::main]
 async fn main() {
-    // build our application with a single route
-    let app = Router::new().route("/", get(root));
+    env_logger::init();
 
-    // Get the port number from the environment, default to 3000
-    let port: u16 = std::env::var("PORT")
-        .unwrap_or_else(|_| "3000".to_string()) // Get the port as a string or default to "3000"
-        .parse() // Parse the port string into a u16
-        .expect("Failed to parse PORT");
+    let database = init_database().expect("Failed to initialize database");
 
-    // Create a socket address (IPv6 binding)
-    let address = SocketAddr::from(([0, 0, 0, 0], port));
-    let listener = tokio::net::TcpListener::bind(&address).await.unwrap();
+    let shared_database = Arc::new(Mutex::new(database));
 
-    // Run the app with hyper, listening on the specified address
-    axum::serve(listener, app).await.unwrap();
-}
+    let app = create_router(shared_database);
 
-// basic handler that responds with a static string
-async fn root() -> &'static str {
-    "Hello World, from Axum!"
+    let address: SocketAddr = "0.0.0.0:4000"
+        .parse()
+        .expect("Invalid address or port");
+
+    axum_server::bind(address)
+        .serve(app.into_make_service())
+        .await
+        .expect("Server failed to start");
 }
