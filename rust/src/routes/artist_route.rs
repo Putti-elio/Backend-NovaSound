@@ -1,4 +1,4 @@
-use axum::{extract::{State, Json}, http::StatusCode};
+use axum::{extract::{State, Json, Path}, http::StatusCode};
 use log::{info, error};
 use function_name::named;
 
@@ -37,5 +37,22 @@ pub async fn create_artist(State(database): State<SharedDatabase>, Json(payload)
             error!("Database error couldn't create artist. {} At {}::{} ", err, file!(), function_name!()); 
             (StatusCode::INTERNAL_SERVER_ERROR, "Failed to create artist")
         },
+    }
+}
+
+
+
+#[named]
+pub async fn get_artist(State(database): State<SharedDatabase>, Path(id): Path<i32>)
+    -> Result<Json<Artist>, StatusCode> 
+{
+    let db = database.lock().unwrap();
+
+    match artist_service::get_artist(&db, &id) {
+        Ok(artist) => Ok(Json(artist)),
+        Err(err) => {
+            error!("Database error couldn't get artist. {} At {}::{} ", err, file!(), function_name!());
+            Err(StatusCode::INTERNAL_SERVER_ERROR)
+        }
     }
 }
