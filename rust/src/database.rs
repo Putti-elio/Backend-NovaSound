@@ -5,7 +5,7 @@ use function_name::named;
 
 #[named]
 pub fn init_database() -> Result<Connection, Error> {
-    let database = Connection::open("../data/database.db")
+    let database = Connection::open("data/database.db")
         .map_err(|e| {
             error!("Database couldn't be initialized: {}. At {}::{}", e, file!(), function_name!());
             e
@@ -13,15 +13,17 @@ pub fn init_database() -> Result<Connection, Error> {
 
     let query = "
         CREATE TABLE IF NOT EXISTS artists (
-            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            id TEXT PRIMARY KEY,
             name TEXT NOT NULL UNIQUE,
             image_path TEXT
         );
 
         CREATE TABLE IF NOT EXISTS songs (
-            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            id TEXT PRIMARY KEY,
             name TEXT NOT NULL,
-            duration INTEGER
+            duration INTEGER,
+            artist_id TEXT,
+            FOREIGN KEY (artist_id) REFERENCES artists(id)
         );
     ";  
 
