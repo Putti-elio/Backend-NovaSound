@@ -13,3 +13,4 @@ log = "0.4.28"
 rusqlite = "0.31.0"
 serde = { version = "1.0.228", features = ["derive"] }
 tokio = { version = "1.47.1", features = ["full"] }
+uuid = { version = "1.19.0", features = ["v4"] }

@@ -1,4 +1,4 @@
-use anyhow::{Error, Context};
+use anyhow::{Error};
 use log::error;
 
 pub fn log_and_context_error<E>(err: E, msg: &str, file: &str, function: &str) -> Error

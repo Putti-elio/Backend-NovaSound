@@ -1,6 +1,5 @@
 use std::sync::{Arc, Mutex};
 use std::net::SocketAddr;
-use log::info;
 use env_logger;
 
 use rust::database::init_database;
