@@ -1,5 +1,6 @@
 use axum::{debug_handler, extract::{State, Json, Path}, http::StatusCode};
 use log::{info, error};
+use anyhow::{Context, Result};
 use function_name::named;
 use uuid::Uuid;
 
@@ -60,3 +61,20 @@ pub async fn get_artist(
         }
     }
 }
+
+
+pub async fn remove_artist(Statea(database): State<SharedDatabase>, Path(id): Path<Uuid>)
+    -> (StatusCode, &'static str){
+        
+        let db = database.lock {
+            Ok(db) => {
+                match artist_service::create_artist(&db, &id.to_string()){
+                    Ok(StatusCode::OK, "Operation artist remove GOOD")
+                }
+            }
+            Err(error) => {
+                error!("Database. {} At {}::{} ", err, file!(), function_name!());
+                Err(StatusCode::INTERNAL_SERVER_ERROR, "Error couldn't remove artist")
+            }
+        }
+    }
