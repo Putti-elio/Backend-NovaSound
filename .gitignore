@@ -41,3 +41,11 @@ Cargo.lock
 # === macOS / Linux / Windows spécifiques ===
 .DS_Store
 Thumbs.db
+
+
+.env
+
+
+# OpenCode 
+AGENTS.md
+opencode.json

@@ -1,18 +1,16 @@
-use serde::{Deserialize, Serialize};
+use serde::{Serialize, Deserialize};
+use tokio::time;
 
 #[derive(Debug, Serialize, Deserialize)]
-pub struct Artist {
+pub struct Song {
     pub id: String,
     pub name: String,
+    pub duration: time,
     pub image_path: String,
 }
 
 #[derive(Debug, Deserialize)]
 pub struct CreateArtist {
     pub name: String,
-}
-
-#[derive(Debug, Deserialize)]
-pub struct UpdateArtist {
-    pub name: String,
+    pub duration: time,
 }
