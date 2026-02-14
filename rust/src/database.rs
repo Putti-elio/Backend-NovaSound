@@ -1,15 +1,18 @@
-use rusqlite::{Connection, Result, Error};
-use log::{info, error};
 use function_name::named;
-
+use log::{error, info};
+use rusqlite::{Connection, Error, Result};
 
 #[named]
 pub fn init_database() -> Result<Connection, Error> {
-    let database = Connection::open("data/database.db")
-        .map_err(|e| {
-            error!("Database couldn't be initialized: {}. At {}::{}", e, file!(), function_name!());
-            e
-        })?;
+    let database = Connection::open("data/database.db").map_err(|e| {
+        error!(
+            "Database couldn't be initialized: {}. At {}::{}",
+            e,
+            file!(),
+            function_name!()
+        );
+        e
+    })?;
 
     let query = "
         CREATE TABLE IF NOT EXISTS artists (
@@ -25,10 +28,25 @@ pub fn init_database() -> Result<Connection, Error> {
             artist_id TEXT,
             FOREIGN KEY (artist_id) REFERENCES artists(id)
         );
-    ";  
+
+        CREATE TABLE IF NOT EXISTS albums (
+            id TEXT PRIMARY KEY,
+            name TEXT NOT NULL,
+            total_duration INTEGER DEFAULT 0,
+            release_date INTEGER,
+            artist_id TEXT NOT NULL,
+            image_path TEXT,
+            FOREIGN KEY (artist_id) REFERENCES artists(id) ON DELETE CASCADE
+        );
+    ";
 
     database.execute_batch(query).map_err(|err| {
-        error!("Failed to initialise the database and to create tables: {}. At {}::{}", err, file!(), function_name!());
+        error!(
+            "Failed to initialise the database and to create tables: {}. At {}::{}",
+            err,
+            file!(),
+            function_name!()
+        );
         err
     })?;
 
