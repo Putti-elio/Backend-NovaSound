@@ -1,10 +1,10 @@
 use axum::{debug_handler, extract::{State, Json, Path}, http::StatusCode};
 use log::{info, error};
-use anyhow::{Context, Result};
+use anyhow::{Result};
 use function_name::named;
 use uuid::Uuid;
 
-use crate::models::artist_model::{Artist, CreateArtist};
+use crate::models::artist_model::{Artist, CreateArtist, UpdateArtist};
 use crate::services::artist_service;
 use crate::routes::SharedDatabase;
 
@@ -62,19 +62,37 @@ pub async fn get_artist(
     }
 }
 
+#[named]
+#[debug_handler]
+pub async fn update_artist(
+    State(database): State<SharedDatabase>,
+    Path(id): Path<Uuid>,
+    Json(payload): Json<UpdateArtist>,
+) -> (StatusCode, &'static str) {
+    let db = database.lock().unwrap();
 
-pub async fn remove_artist(Statea(database): State<SharedDatabase>, Path(id): Path<Uuid>)
-    -> (StatusCode, &'static str){
-        
-        let db = database.lock {
-            Ok(db) => {
-                match artist_service::create_artist(&db, &id.to_string()){
-                    Ok(StatusCode::OK, "Operation artist remove GOOD")
-                }
-            }
-            Err(error) => {
-                error!("Database. {} At {}::{} ", err, file!(), function_name!());
-                Err(StatusCode::INTERNAL_SERVER_ERROR, "Error couldn't remove artist")
-            }
+    match artist_service::update_artist(&db, &id.to_string(), &payload.name) {
+        Ok(()) => (StatusCode::OK, "Artist updated successfully"),
+        Err(err) => {
+            error!("Database error couldn't update artist. {} At {}::{} ", err, file!(), function_name!());
+            (StatusCode::INTERNAL_SERVER_ERROR, "Failed to update artist")
         }
     }
+}
+
+#[named]
+#[debug_handler]
+pub async fn delete_artist(
+    State(database): State<SharedDatabase>,
+    Path(id): Path<Uuid>,
+) -> (StatusCode, &'static str) {
+    let db = database.lock().unwrap();
+
+    match artist_service::delete_artist(&db, &id.to_string()) {
+        Ok(()) => (StatusCode::OK, "Artist deleted successfully"),
+        Err(err) => {
+            error!("Database error couldn't delete artist. {} At {}::{} ", err, file!(), function_name!());
+            (StatusCode::INTERNAL_SERVER_ERROR, "Failed to delete artist")
+        }
+    }
+}

@@ -1,4 +1,4 @@
-use axum::{Router, routing::{get, post}};
+use axum::{Router, routing::{get, post, put, delete}};
 use std::sync::{Arc, Mutex};
 use rusqlite::Connection;
 
@@ -12,6 +12,8 @@ pub fn create_router(database: SharedDatabase) -> Router {
         .route("/artists", get(artist_route::get_all_artists))
         .route("/artists/{id}", get(artist_route::get_artist))
         .route("/artists", post(artist_route::create_artist))
+        .route("/artists/{id}", put(artist_route::update_artist))
+        .route("/artists/{id}", delete(artist_route::delete_artist))
         .with_state(database)
 }
 

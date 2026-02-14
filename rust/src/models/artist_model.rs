@@ -1,5 +1,4 @@
-use serde::{Serialize, Deserialize};
-
+use serde::{Deserialize, Serialize};
 
 #[derive(Debug, Serialize, Deserialize)]
 pub struct Artist {
@@ -10,5 +9,10 @@ pub struct Artist {
 
 #[derive(Debug, Deserialize)]
 pub struct CreateArtist {
+    pub name: String,
+}
+
+#[derive(Debug, Deserialize)]
+pub struct UpdateArtist {
     pub name: String,
 }
