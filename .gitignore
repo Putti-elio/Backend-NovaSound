@@ -2,7 +2,7 @@
 # Fichiers de build et dossiers cibles
 /target/
 **/target/
-data/
+*.db
 
 # Lockfile généré automatiquement
 Cargo.lock
