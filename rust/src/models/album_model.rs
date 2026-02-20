@@ -1,6 +1,8 @@
 use chrono::NaiveDate;
 use serde::{Deserialize, Serialize};
 
+use crate::models::song_model::AlbumType;
+
 #[derive(Debug, Serialize, Deserialize)]
 pub struct Album {
     pub id: String,
@@ -9,7 +11,8 @@ pub struct Album {
     #[serde(with = "date_serde")]
     pub release_date: Option<NaiveDate>,
     pub artist_id: String,
-    pub image_path: String,
+    pub image_path: Option<String>,
+    pub album_type: AlbumType,
 }
 
 #[derive(Debug, Deserialize)]
@@ -17,6 +20,7 @@ pub struct CreateAlbum {
     pub name: String,
     pub release_date: Option<NaiveDate>,
     pub artist_id: String,
+    pub album_type: Option<AlbumType>,
 }
 
 #[derive(Debug, Deserialize)]
