@@ -1,16 +1,17 @@
 use chrono::NaiveTime;
-use rusqlite::{Connection, params};
+use rusqlite::{params, Connection};
 use uuid::Uuid;
 
 use crate::errors::{AppError, AppResult};
 use crate::models::album_model::{Album, CreateAlbum, UpdateAlbum};
+use crate::models::song_model::AlbumType;
 use crate::utils::log_and_context_error;
 use function_name::named;
 
 #[named]
 pub fn get_all_albums(conn: &Connection) -> AppResult<Vec<Album>> {
     let mut stmt = conn
-        .prepare("SELECT id, name, total_duration, release_date, artist_id, image_path FROM albums")
+        .prepare("SELECT id, name, total_duration, release_date, artist_id, image_path, album_type FROM albums")
         .map_err(|err| {
             log_and_context_error(
                 err,
@@ -26,6 +27,9 @@ pub fn get_all_albums(conn: &Connection) -> AppResult<Vec<Album>> {
             let release_date = release_date_timestamp
                 .and_then(|ts| chrono::DateTime::from_timestamp(ts, 0).map(|dt| dt.date_naive()));
 
+            let album_type_str: String = row.get(6)?;
+            let album_type = AlbumType::from_str(&album_type_str).unwrap_or(AlbumType::Album);
+
             Ok(Album {
                 id: row.get(0)?,
                 name: row.get(1)?,
@@ -33,6 +37,7 @@ pub fn get_all_albums(conn: &Connection) -> AppResult<Vec<Album>> {
                 release_date,
                 artist_id: row.get(4)?,
                 image_path: row.get(5)?,
+                album_type,
             })
         })
         .map_err(|err| {
@@ -52,7 +57,7 @@ pub fn get_all_albums(conn: &Connection) -> AppResult<Vec<Album>> {
 #[named]
 pub fn get_album_by_id(conn: &Connection, id: &str) -> AppResult<Album> {
     let mut stmt = conn
-        .prepare("SELECT id, name, total_duration, release_date, artist_id, image_path FROM albums WHERE id = ?1")
+        .prepare("SELECT id, name, total_duration, release_date, artist_id, image_path, album_type FROM albums WHERE id = ?1")
         .map_err(|err| {
             log_and_context_error(
                 err,
@@ -67,6 +72,9 @@ pub fn get_album_by_id(conn: &Connection, id: &str) -> AppResult<Album> {
         let release_date = release_date_timestamp
             .and_then(|ts| chrono::DateTime::from_timestamp(ts, 0).map(|dt| dt.date_naive()));
 
+        let album_type_str: String = row.get(6)?;
+        let album_type = AlbumType::from_str(&album_type_str).unwrap_or(AlbumType::Album);
+
         Ok(Album {
             id: row.get(0)?,
             name: row.get(1)?,
@@ -74,6 +82,7 @@ pub fn get_album_by_id(conn: &Connection, id: &str) -> AppResult<Album> {
             release_date,
             artist_id: row.get(4)?,
             image_path: row.get(5)?,
+            album_type,
         })
     })
     .map_err(|err| match err {
@@ -92,7 +101,7 @@ pub fn get_album_by_id(conn: &Connection, id: &str) -> AppResult<Album> {
 #[named]
 pub fn get_albums_by_artist(conn: &Connection, artist_id: &str) -> AppResult<Vec<Album>> {
     let mut stmt = conn
-        .prepare("SELECT id, name, total_duration, release_date, artist_id, image_path FROM albums WHERE artist_id = ?1")
+        .prepare("SELECT id, name, total_duration, release_date, artist_id, image_path, album_type FROM albums WHERE artist_id = ?1")
         .map_err(|err| {
             log_and_context_error(
                 err,
@@ -108,6 +117,9 @@ pub fn get_albums_by_artist(conn: &Connection, artist_id: &str) -> AppResult<Vec
             let release_date = release_date_timestamp
                 .and_then(|ts| chrono::DateTime::from_timestamp(ts, 0).map(|dt| dt.date_naive()));
 
+            let album_type_str: String = row.get(6)?;
+            let album_type = AlbumType::from_str(&album_type_str).unwrap_or(AlbumType::Album);
+
             Ok(Album {
                 id: row.get(0)?,
                 name: row.get(1)?,
@@ -115,6 +127,7 @@ pub fn get_albums_by_artist(conn: &Connection, artist_id: &str) -> AppResult<Vec
                 release_date,
                 artist_id: row.get(4)?,
                 image_path: row.get(5)?,
+                album_type,
             })
         })
         .map_err(|err| {
@@ -183,15 +196,18 @@ pub fn create_album(conn: &Connection, album: CreateAlbum) -> AppResult<String> 
             .timestamp()
     });
 
+    let album_type = album.album_type.unwrap_or(AlbumType::Album);
+
     conn.execute(
-        "INSERT INTO albums (id, name, total_duration, release_date, artist_id, image_path) 
-         VALUES (?1, ?2, 0, ?3, ?4, ?5)",
+        "INSERT INTO albums (id, name, total_duration, release_date, artist_id, image_path, album_type) 
+         VALUES (?1, ?2, 0, ?3, ?4, ?5, ?6)",
         params![
             &id,
             &album.name,
             release_date_timestamp,
             &album.artist_id,
-            &image_path
+            &image_path,
+            album_type.as_str()
         ],
     )
     .map_err(|err| {
@@ -307,7 +323,7 @@ pub fn delete_album(conn: &Connection, id: &str) -> AppResult<()> {
 pub fn update_album_duration(conn: &Connection, album_id: &str) -> AppResult<()> {
     let total_duration: u32 = conn
         .query_row(
-            "SELECT COALESCE(SUM(duration), 0) FROM songs WHERE artist_id = ?1",
+            "SELECT COALESCE(SUM(duration), 0) FROM songs WHERE album_id = ?1",
             params![album_id],
             |row| row.get(0),
         )
