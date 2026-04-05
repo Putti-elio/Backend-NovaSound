@@ -7,6 +7,7 @@ pub mod utils;
 
 #[cfg(test)]
 mod tests {
+    mod album;
     mod artist;
     mod song;
 }
